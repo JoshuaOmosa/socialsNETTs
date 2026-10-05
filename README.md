@@ -28,12 +28,17 @@ python -m venv .venv
 .venv\Scripts\pip install -r requirements.txt     # Windows
 # .venv/bin/pip install -r requirements.txt       # macOS/Linux
 
+$env:DJANGO_DEBUG = "1"                           # Windows (PowerShell)
+# export DJANGO_DEBUG=1                           # macOS/Linux
+
 .venv\Scripts\python manage.py migrate
 .venv\Scripts\python manage.py seed_data
 .venv\Scripts\python manage.py runserver 8500
 ```
 
 That's running on `http://localhost:8500`.
+
+`DJANGO_DEBUG=1` enables development mode with a throwaway secret key. Without it, the backend refuses to start unless `DJANGO_SECRET_KEY` is set. See `backend/.env.example` for all backend variables.
 
 ### Frontend (Next.js)
 
@@ -337,6 +342,8 @@ Right now, this is **local development only**.
 To deploy:
 - **Frontend:** Deploy the `next build` output to Vercel, Netlify, or any Node host
 - **Backend:** Deploy Django to AWS, Heroku, Railway, or similar
+  - Set `DJANGO_SECRET_KEY` and `DJANGO_ALLOWED_HOSTS`, and leave `DJANGO_DEBUG` unset
+  - Re-seed with your own users; the demo password is for local use only
 - Update `DJANGO_API_URL` in the Next.js build to point to your production Django server
 
 See `next.config.mjs` and `backend/config/settings.py` for environment variables.

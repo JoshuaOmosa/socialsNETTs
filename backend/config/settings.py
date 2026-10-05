@@ -1,13 +1,23 @@
+import os
 from datetime import timedelta
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "dev-only-secret-key-not-for-production"
+# Debug is opt-in: set DJANGO_DEBUG=1 for local development.
+DEBUG = os.environ.get("DJANGO_DEBUG", "0") == "1"
 
-DEBUG = True
+# A throwaway key is only acceptable in debug mode. Anywhere else the real key
+# must come from the environment, and startup fails loudly if it's missing.
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "")
+if not SECRET_KEY:
+    if not DEBUG:
+        raise ImproperlyConfigured("Set DJANGO_SECRET_KEY (or DJANGO_DEBUG=1 for local development).")
+    SECRET_KEY = "dev-only-insecure-key"
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
